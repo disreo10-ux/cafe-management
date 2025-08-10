@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오버나잇 샌드위치 생산 대시보드 - Firebase 실시간 연동</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans KR', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+            font-size: 14px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+            color: white;
+            padding: 20px 15px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 1.8em;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+        
+        .firebase-status {
+            background: rgba(255,255,255,0.2);
+            margin: 15px 0;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.9em;
+        }
+        
+        .firebase-status.connected {
+            background: rgba(72, 187, 120, 0.3);
+        }
+        
+        .firebase-status.error {
+            background: rgba(229, 62, 62, 0.3);
+        }
+        
+        .firebase-status.setup {
+            background: rgba(255, 193, 7, 0.3);
+        }
+        
+        .realtime-indicator {
+            background: rgba(255,255,255,0.2);
+            margin: 10px 0;
+            padding: 8px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.8em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .pulse {
+            width: 8px;
+            height: 8px;
+            background: #48bb78;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding: 20px 15px;
+        }
+        
+        @media (min-width: 768px) {
+            body {
+                padding: 20px;
+                font-size: 16px;
+            }
+            
+            .header {
+                padding: 30px;
+            }
+            
+            .header h1 {
+                font-size: 2.2em;
+            }
+            
+            .main-content {
+                display: grid;
+                grid-template-columns: 1fr 2fr;
+                gap: 30px;
+                padding: 30px;
+            }
+        }
+        
+        .input-section {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid #e1e8ff;
+        }
+        
+        .firebase-config {
+            background: #fff8e1;
+            border: 2px solid #ffcc02;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .firebase-config h3 {
+            color: #f57c00;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .input-section h2 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 0.95em;
+        }
+        
+        .input-group input, .input-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+        
+        .input-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            width: 100%;
+            margin-top: 10px;
+            touch-action: manipulation;
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .btn:not(:disabled):hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .setup-guide {
+            margin-top: 15px;
+            padding: 15px;
+            background: #e6fffa;
+            border-radius: 8px;
+            border-left: 4px solid #4ECDC4;
+        }
+        
+        .setup-guide h4 {
+            margin-bottom: 10px;
+            color: #2d3748;
+            font-size: 1em;
+        }
+        
+        .setup-guide ol {
+            padding-left: 20px;
+            font-size: 0.9em;
+            color: #4a5568;
+            line-height: 1.5;
+        }
+        
+        .setup-guide ol li {
+            margin-bottom: 5px;
+        }
+        
+        .stats-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        @media (min-width: 480px) {
+            .stats-row {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px 15px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+        }
+        
+        .stat-number {
+            font-size: 1.8em;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.85em;
+            opacity: 0.9;
+        }
+        
+        .production-queue {
+            background: #fff;
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+            overflow: hidden;
+        }
+        
+        .queue-header {
+            background: linear-gradient(135deg, #4ECDC4, #44A08D);
+            color: white;
+            padding: 20px 15px;
+            text-align: center;
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: #48bb78;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+            transition: transform 0.3s ease;
+            max-width: 90vw;
+            text-align: center;
+            font-size: 0.9em;
+        }
+        
+        .notification.show {
+            transform: translateX(-50%) translateY(0);
+        }
+        
+        .notification.error {
+            background: #e53e3e;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #718096;
+        }
+        
+        .queue-item {
+            padding: 20px 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .queue-item:last-child {
+            border-bottom: none;
+        }
+        
+        .priority-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            color: white;
+            margin-right: 10px;
+            display: inline-block;
+        }
+        
+        .priority-1 { background: linear-gradient(135deg, #FF6B6B, #FF8E53); }
+        .priority-2 { background: linear-gradient(135deg, #4ECDC4, #44A08D); }
+        .priority-3 { background: linear-gradient(135deg, #45B7D1, #96CEB4); }
+        .priority-4 { background: linear-gradient(135deg, #96CEB4, #FFECD2); }
+        
+        .sandwich-name {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+        
+        .delivery-item {
+            background: #f8f9ff;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 6px;
+            border-left: 4px solid;
+            font-size: 0.9em;
+        }
+        
+        .delivery-item.complete {
+            border-left-color: #38a169;
+        }
+        
+        .delivery-item.half {
+            border-left-color: #3182ce;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🥪 오버나잇 생산 대시보드</h1>
+            <p>Firebase 실시간 동기화 시스템 (무료)</p>
+            
+            <div class="firebase-status" id="firebaseStatus">
+                🔧 Firebase 설정이 필요합니다
+            </div>
+            
+            <div class="realtime-indicator" id="realtimeIndicator" style="display: none;">
+                <div class="pulse"></div>
+                <span>실시간 동기화 활성화</span>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="input-section">
+                <div class="firebase-config" id="firebaseConfig">
+                    <h3>🔥 Firebase 설정 (1회만 입력)</h3>
+                    <div class="input-group">
+                        <label for="apiKey">API Key</label>
+                        <input type="text" id="apiKey" placeholder="AIzaSy..." />
+                    </div>
+                    <div class="input-group">
+                        <label for="databaseURL">Database URL</label>
+                        <input type="text" id="databaseURL" placeholder="https://your-project-default-rtdb.asia-southeast1.firebasedatabase.app/" />
+                    </div>
+                    <button class="btn" onclick="initializeFirebase()" style="background: linear-gradient(135deg, #ff6b6b, #4ecdc4);">🚀 Firebase 연결</button>
+                </div>
+                
+                <h2>📊 데이터 입력</h2>
+                
+                <div class="input-group">
+                    <label for="sheetData">스프레드시트 데이터</label>
+                    <textarea id="sheetData" placeholder="스프레드시트에서 데이터를 복사해서 여기에 붙여넣으세요..."></textarea>
+                </div>
+                
+                <button class="btn" onclick="saveToFirebase()" id="saveBtn" disabled>☁️ Firebase에 저장 (실시간 공유)</button>
+                <button class="btn" onclick="generateProductionSchedule()" style="background: linear-gradient(135deg, #4ECDC4, #44A08D);">🚀 생산계획 생성</button>
+                
+                <div class="setup-guide">
+                    <h4>🔥 Firebase 설정 방법</h4>
+                    <ol>
+                        <li><a href="https://console.firebase.google.com/" target="_blank">Firebase Console</a> 접속</li>
+                        <li>"프로젝트 추가" 클릭</li>
+                        <li>"Realtime Database" → "데이터베이스 만들기"</li>
+                        <li>"테스트 모드에서 시작" 선택</li>
+                        <li>프로젝트 설정에서 API Key와 Database URL 복사</li>
+                        <li>위에 입력 후 "Firebase 연결" 클릭</li>
+                    </ol>
+                    <p style="margin-top: 10px; font-weight: 600; color: #2d3748;">
+                        ✅ 완전 무료! 1GB 저장공간, 10GB/월 대역폭 제공
+                    </p>
+                </div>
+                
+                <button class="btn" onclick="loadSampleData()" style="background: linear-gradient(135deg, #9F7AEA, #667eea);">🧪 샘플 데이터</button>
+                <button class="btn" onclick="clearAll()" style="background: linear-gradient(135deg, #FF6B6B, #FF8E53);">🗑️ 전체 초기화</button>
+                <button class="btn" onclick="window.print()" style="background: linear-gradient(135deg, #38B2AC, #2D3748);">🖨️ 인쇄</button>
+            </div>
+            
+            <div class="dashboard-section">
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalOrders">0</div>
+                        <div class="stat-label">총 주문 건수</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalQuantity">0</div>
+                        <div class="stat-label">총 생산 개수</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="productionTypes">0</div>
+                        <div class="stat-label">생산 종류 수</div>
+                    </div>
+                </div>
+                
+                <div class="production-queue">
+                    <div class="queue-header">
+                        ⏰ 생산 우선순위 대시보드
+                        <div style="font-size: 0.8em; margin-top: 5px; opacity: 0.9;" id="lastUpdated"></div>
+                    </div>
+                    <div id="productionList">
+                        <div class="empty-state">
+                            <div style="font-size: 3em; margin-bottom: 15px; opacity: 0.3;">🔥</div>
+                            <h3>Firebase 연결 후 데이터를 입력하세요</h3>
+                            <p>실시간으로 모든 기기에서 동기화됩니다!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, set, onValue, push } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+        // 전역 변수
+        let orders = [];
+        let productionQueue = [];
+        let firebaseApp = null;
+        let database = null;
+        let isFirebaseConnected = false;
+        const PRODUCTION_TIME_PER_UNIT = 2;
+
+        // Firebase 변수를 전역으로 노출
+        window.firebaseApp = null;
+        window.database = null;
+        window.isFirebaseConnected = false;
+
+        // Firebase 초기화 함수를 전역으로 노출
+        window.initializeFirebase = async function() {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const databaseURL = document.getElementById('databaseURL').value.trim();
+            
+            if (!apiKey || !databaseURL) {
+                showNotification('API Key와 Database URL을 모두 입력해주세요!', true);
+                return;
+            }
+            
+            try {
+                updateFirebaseStatus('🔄 Firebase 연결 중...', 'setup');
+                
+                const firebaseConfig = {
+                    apiKey: apiKey,
+                    databaseURL: databaseURL
+                };
+                
+                window.firebaseApp = initializeApp(firebaseConfig);
+                window.database = getDatabase(window.firebaseApp);
+                window.isFirebaseConnected = true;
+                
+                // 설정 저장
+                localStorage.setItem('firebase_api_key', apiKey);
+                localStorage.setItem('firebase_database_url', databaseURL);
+                
+                // 실시간 리스너 설정
+                setupRealtimeListeners();
+                
+                updateFirebaseStatus('✅ Firebase 연결 성공! 실시간 동기화 활성화', 'connected');
+                document.getElementById('realtimeIndicator').style.display = 'flex';
+                document.getElementById('firebaseConfig').style.display = 'none';
+                document.getElementById('saveBtn').disabled = false;
+                
+                showNotification('🔥 Firebase 연결 성공! 이제 실시간 동기화가 활성화되었습니다!');
+                
+                // 기존 데이터 불러오기
+                loadFromFirebase();
+                
+            } catch (error) {
+                console.error('Firebase 초기화 실패:', error);
+                updateFirebaseStatus('❌ Firebase 연결 실패 - 설정을 확인해주세요', 'error');
+                showNotification('Firebase 연결에 실패했습니다. 설정을 확인해주세요.', true);
+            }
+        };
+
+        // 실시간 리스너 설정
+        function setupRealtimeListeners() {
+            if (!window.database) return;
+            
+            // 주문 데이터 실시간 감시
+            const ordersRef = ref(window.database, 'orders');
+            onValue(ordersRef, (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    orders = Object.values(data);
+                    updateStats();
+                    updateTimestamp();
+                    showNotification('📥 새로운 데이터가 동기화되었습니다!');
+                }
+            });
+            
+            // 생산계획 실시간 감시
+            const productionRef = ref(window.database, 'productionQueue');
+            onValue(productionRef, (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    productionQueue = Object.values(data);
+                    renderProductionQueue();
+                    updateTimestamp();
+                }
+            });
+        }
+
+        // Firebase에서 데이터 불러오기
+        async function loadFromFirebase() {
+            if (!window.database) return;
+            
+            try {
+                const ordersRef = ref(window.database, 'orders');
+                onValue(ordersRef, (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        orders = Object.values(data);
+                        updateStats();
+                    }
+                }, { onlyOnce: true });
+                
+            } catch (error) {
+                console.error('데이터 로드 실패:', error);
+            }
+        }
+
+        // Firebase에 저장 함수를 전역으로 노출
+        window.saveToFirebase = async function() {
+            if (!window.isFirebaseConnected) {
+                showNotification('먼저 Firebase를 연결해주세요!', true);
+                return;
+            }
+            
+            const sheetData = document.getElementById('sheetData').value.trim();
+            
+            if (!sheetData) {
+                showNotification('데이터를 입력해주세요!', true);
+                return;
+            }
+            
+            try {
+                const lines = sheetData.split('\n');
+                const newOrders = [];
+                
+                lines.forEach((line, index) => {
+                    if (index === 0) return;
+                    
+                    const cells = line.split('\t');
+                    if (cells.length < 8) return;
+                    
+                    const sandwichType = cells[2] ? cells[2].trim() : '';
+                    const productType = cells[3] ? cells[3].trim() : '완품';
+                    const quantity = cells[4] ? parseInt(cells[4].trim()) : 0;
+                    const packagingMethod = cells[5] ? cells[5].trim() : '일반포장';
+                    const deliveryTime = cells[6] ? cells[6].trim() : '';
+                    const deliveryInfo = cells[7] ? cells[7].trim() : '일반';
+                    
+                    if (deliveryTime && quantity > 0 && sandwichType) {
+                        let formattedTime = deliveryTime;
+                        if (deliveryTime.includes(':') && deliveryTime.length <= 4) {
+                            const parts = deliveryTime.split(':');
+                            formattedTime = parts[0].padStart(2, '0') + ':' + parts[1].padStart(2, '0');
+                        }
+                        
+                        newOrders.push({
+                            id: Date.now() + index,
+                            orderNumber: `ROW-${index + 1}`,
+                            sandwichType: sandwichType,
+                            productType: productType,
+                            quantity: quantity,
+                            deliveryTime: formattedTime,
+                            packagingMethod: packagingMethod,
+                            deliveryInfo: deliveryInfo,
+                            addedAt: new Date().toLocaleString(),
+                            originalRow: index + 1
+                        });
+                    }
+                });
+                
+                if (newOrders.length === 0) {
+                    showNotification('저장할 데이터가 없습니다.', true);
+                    return;
+                }
+                
+                // Firebase에 저장
+                const ordersRef = ref(window.database, 'orders');
+                await set(ordersRef, newOrders);
+                
+                orders = newOrders;
+                updateStats();
+                updateTimestamp();
+                
+                showNotification(`🔥 ${newOrders.length}개 주문이 Firebase에 저장되었습니다! 모든 기기에서 실시간 동기화됩니다!`);
+                
+            } catch (error) {
+                console.error('Firebase 저장 실패:', error);
+                showNotification('데이터 저장 중 오류가 발생했습니다.', true);
+            }
+        };
+
+        // 생산계획 생성 함수를 전역으로 노출
+        window.generateProductionSchedule = async function() {
+            if (orders.length === 0) {
+                showNotification('먼저 데이터를 입력하고 저장해주세요!', true);
+                return;
+            }
+            
+            const sandwichGroups = {};
+            
+            orders.forEach(order => {
+                if (!sandwichGroups[order.sandwichType]) {
+                    sandwichGroups[order.sandwichType] = {
+                        type: order.sandwichType,
+                        orders: [],
+                        totalQuantity: 0,
+                        earliestDelivery: order.deliveryTime
+                    };
+                }
+                
+                sandwichGroups[order.sandwichType].orders.push(order);
+                sandwichGroups[order.sandwichType].totalQuantity += order.quantity;
+                
+                const orderTimeMinutes = timeStringToMinutes(order.deliveryTime);
+                const earliestTimeMinutes = timeStringToMinutes(sandwichGroups[order.sandwichType].earliestDelivery);
+                
+                if (orderTimeMinutes < earliestTimeMinutes) {
+                    sandwichGroups[order.sandwichType].earliestDelivery = order.deliveryTime;
+                }
+            });
+            
+            productionQueue = Object.values(sandwichGroups).sort((a, b) => {
+                const timeA = timeStringToMinutes(a.earliestDelivery);
+                const timeB = timeStringToMinutes(b.earliestDelivery);
+                return timeA - timeB;
+            });
+            
+            productionQueue.forEach((group, index) => {
+                const totalProductionMinutes = group.totalQuantity * PRODUCTION_TIME_PER_UNIT;
+                const bufferMinutes = Math.ceil(totalProductionMinutes * 0.15);
+                
+                group.priority = index + 1;
+                group.estimatedDuration = totalProductionMinutes + bufferMinutes;
+            });
+            
+            // Firebase에 생산계획도 저장
+            if (window.isFirebaseConnected) {
+                try {
+                    const productionRef = ref(window.database, 'productionQueue');
+                    await set(productionRef, productionQueue);
+                } catch (error) {
+                    console.error('생산계획 저장 실패:', error);
+                }
+            }
+            
+            renderProductionQueue();
+            updateStats();
+            updateTimestamp();
+            showNotification('🚀 생산계획이 생성되고 실시간 동기화되었습니다!');
+        };
+
+        // 기타 함수들을 전역으로 노출
+        window.updateFirebaseStatus = function(message, status) {
+            const firebaseStatus = document.getElementById('firebaseStatus');
+            firebaseStatus.textContent = message;
+            firebaseStatus.className = `firebase-status ${status}`;
+        };
+
+        window.showNotification = function(message, isError = false) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            if (isError) notification.classList.add('error');
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => notification.classList.add('show'), 100);
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    if (document.body.contains(notification)) {
+                        document.body.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        };
+
+        window.timeStringToMinutes = function(timeStr) {
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            return hours * 60 + minutes;
+        };
+
+        window.updateStats = function() {
+            document.getElementById('totalOrders').textContent = orders.length;
+            document.getElementById('totalQuantity').textContent = orders.reduce((sum, order) => sum + order.quantity, 0);
+            
+            const uniqueTypes = new Set(orders.map(order => order.sandwichType));
+            document.getElementById('productionTypes').textContent = uniqueTypes.size;
+        };
+
+        window.
