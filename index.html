@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>오버나잇 샌드위치 생산 대시보드</title>
     <style>
         * {
@@ -12,62 +12,79 @@
         }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans KR', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 20px;
+            padding: 10px;
+            font-size: 14px;
         }
         
         .container {
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
             background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             overflow: hidden;
         }
         
         .header {
             background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
             color: white;
-            padding: 30px;
+            padding: 20px 15px;
             text-align: center;
         }
         
         .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
+            font-size: 1.8em;
+            margin-bottom: 8px;
             font-weight: 700;
         }
         
         .header p {
-            font-size: 1.1em;
+            font-size: 0.95em;
             opacity: 0.9;
+            margin-bottom: 15px;
         }
         
-        /* 공유 링크 박스 추가 */
         .share-box {
             background: rgba(255,255,255,0.2);
-            margin: 15px 0;
-            padding: 15px;
-            border-radius: 10px;
+            margin: 10px 0;
+            padding: 12px;
+            border-radius: 8px;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .share-label {
+            font-weight: 600;
+            font-size: 0.9em;
+            text-align: center;
+        }
+        
+        .share-url-container {
+            display: flex;
+            gap: 8px;
+            align-items: stretch;
         }
         
         .share-url {
             background: rgba(255,255,255,0.9);
             color: #2d3748;
-            padding: 8px 15px;
-            border-radius: 5px;
+            padding: 10px 12px;
+            border-radius: 6px;
             font-family: monospace;
-            font-size: 0.9em;
+            font-size: 0.8em;
             flex: 1;
             text-align: center;
             cursor: pointer;
             transition: background 0.3s;
+            word-break: break-all;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .share-url:hover {
@@ -78,40 +95,76 @@
             background: rgba(255,255,255,0.3);
             border: 2px solid rgba(255,255,255,0.5);
             color: white;
-            padding: 8px 15px;
-            border-radius: 5px;
+            padding: 8px 12px;
+            border-radius: 6px;
             cursor: pointer;
             transition: all 0.3s;
+            white-space: nowrap;
+            font-size: 0.85em;
+            min-width: 70px;
         }
         
-        .copy-btn:hover {
+        .copy-btn:hover, .copy-btn:active {
             background: rgba(255,255,255,0.5);
+            transform: scale(0.98);
         }
         
         .main-content {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 30px;
-            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding: 20px 15px;
         }
         
-        @media (max-width: 768px) {
+        /* 데스크톱에서는 2열 */
+        @media (min-width: 768px) {
+            body {
+                padding: 20px;
+                font-size: 16px;
+            }
+            
+            .header {
+                padding: 30px;
+            }
+            
+            .header h1 {
+                font-size: 2.2em;
+            }
+            
+            .share-box {
+                flex-direction: row;
+                align-items: center;
+                padding: 15px;
+            }
+            
+            .share-url-container {
+                flex: 1;
+                margin-left: 15px;
+            }
+            
             .main-content {
-                grid-template-columns: 1fr;
+                display: grid;
+                grid-template-columns: 1fr 2fr;
+                gap: 30px;
+                padding: 30px;
+            }
+            
+            .share-label {
+                flex-shrink: 0;
             }
         }
         
         .input-section {
             background: #f8f9ff;
-            padding: 25px;
-            border-radius: 15px;
+            padding: 20px;
+            border-radius: 12px;
             border: 2px solid #e1e8ff;
         }
         
         .input-section h2 {
             color: #2d3748;
-            margin-bottom: 20px;
-            font-size: 1.4em;
+            margin-bottom: 15px;
+            font-size: 1.3em;
         }
         
         .input-group {
@@ -120,12 +173,13 @@
         
         .input-group label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             font-weight: 600;
             color: #4a5568;
+            font-size: 0.95em;
         }
         
-        .input-group input, .input-group select, .input-group textarea {
+        .input-group textarea {
             width: 100%;
             padding: 12px;
             border: 2px solid #e2e8f0;
@@ -133,9 +187,11 @@
             font-size: 14px;
             transition: border-color 0.3s ease;
             font-family: 'Consolas', 'Monaco', monospace;
+            resize: vertical;
+            min-height: 120px;
         }
         
-        .input-group input:focus, .input-group select:focus, .input-group textarea:focus {
+        .input-group textarea:focus {
             outline: none;
             border-color: #4299e1;
             box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
@@ -144,29 +200,88 @@
         .btn {
             background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
-            padding: 12px 25px;
+            padding: 14px 20px;
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 600;
-            transition: transform 0.2s ease;
+            transition: all 0.2s ease;
             width: 100%;
             margin-top: 10px;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
         }
         
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        .btn:hover, .btn:active {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .usage-guide {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e6fffa;
+            border-radius: 8px;
+            border-left: 4px solid #4ECDC4;
+        }
+        
+        .usage-guide h4 {
+            margin-bottom: 10px;
+            color: #2d3748;
+            font-size: 1em;
+        }
+        
+        .usage-guide p {
+            font-size: 0.85em;
+            color: #4a5568;
+            line-height: 1.5;
         }
         
         .dashboard-section {
             background: white;
         }
         
+        .stats-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        @media (min-width: 480px) {
+            .stats-row {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px 15px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+        }
+        
+        .stat-number {
+            font-size: 1.8em;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.85em;
+            opacity: 0.9;
+        }
+        
         .production-queue {
             background: #fff;
-            border-radius: 15px;
+            border-radius: 12px;
             border: 2px solid #e2e8f0;
             overflow: hidden;
         }
@@ -174,18 +289,15 @@
         .queue-header {
             background: linear-gradient(135deg, #4ECDC4, #44A08D);
             color: white;
-            padding: 20px;
+            padding: 20px 15px;
             text-align: center;
-            font-size: 1.3em;
+            font-size: 1.1em;
             font-weight: 600;
         }
         
         .queue-item {
-            padding: 20px;
+            padding: 20px 15px;
             border-bottom: 1px solid #e2e8f0;
-            display: flex;
-            justify-content: between;
-            align-items: center;
             transition: background-color 0.3s ease;
         }
         
@@ -197,15 +309,23 @@
             border-bottom: none;
         }
         
+        .queue-item-header {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
         .priority-badge {
             padding: 6px 12px;
             border-radius: 20px;
             font-size: 12px;
             font-weight: 700;
             color: white;
-            margin-right: 15px;
-            min-width: 60px;
             text-align: center;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
         
         .priority-1 { background: linear-gradient(135deg, #FF6B6B, #FF8E53); }
@@ -214,7 +334,8 @@
         .priority-4 { background: linear-gradient(135deg, #96CEB4, #FFECD2); }
         
         .sandwich-info {
-            flex-grow: 1;
+            flex: 1;
+            min-width: 0;
         }
         
         .sandwich-name {
@@ -222,94 +343,117 @@
             font-weight: 600;
             color: #2d3748;
             margin-bottom: 5px;
+            word-break: break-word;
         }
         
         .sandwich-details {
             font-size: 0.9em;
             color: #718096;
+            line-height: 1.4;
         }
         
-        .production-time {
-            text-align: right;
+        .delivery-section {
+            margin-top: 10px;
+        }
+        
+        .delivery-header {
             font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 10px;
+            font-size: 1em;
         }
         
-        .time-urgent {
-            color: #e53e3e;
+        .delivery-item {
+            background: #f8f9ff;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 8px;
+            border-left: 4px solid;
         }
         
-        .time-normal {
-            color: #38a169;
+        .delivery-item.complete {
+            border-left-color: #38a169;
         }
         
-        .stats-row {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            margin-bottom: 30px;
+        .delivery-item.half {
+            border-left-color: #3182ce;
         }
         
-        @media (max-width: 768px) {
-            .stats-row {
-                grid-template-columns: 1fr;
-            }
+        .delivery-item-header {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
         }
         
-        .stat-card {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 20px;
-            border-radius: 15px;
-            text-align: center;
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
-        }
-        
-        .stat-number {
-            font-size: 2em;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-        
-        .stat-label {
+        .delivery-item-details {
+            color: #4a5568;
             font-size: 0.9em;
-            opacity: 0.9;
+            line-height: 1.3;
         }
         
         .empty-state {
             text-align: center;
-            padding: 60px 20px;
+            padding: 40px 20px;
             color: #718096;
         }
         
-        .empty-state i {
-            font-size: 4em;
-            margin-bottom: 20px;
+        .empty-state-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
             opacity: 0.3;
         }
-
+        
         .notification {
             position: fixed;
             top: 20px;
-            right: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
             background: #48bb78;
             color: white;
-            padding: 15px 20px;
+            padding: 12px 20px;
             border-radius: 8px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             z-index: 1000;
-            transform: translateX(400px);
             transition: transform 0.3s ease;
+            max-width: 90vw;
+            text-align: center;
+            font-size: 0.9em;
         }
         
         .notification.show {
-            transform: translateX(0);
+            transform: translateX(-50%) translateY(0);
         }
-
+        
+        .notification.error {
+            background: #e53e3e;
+        }
+        
+        /* 터치 디바이스 최적화 */
+        @media (hover: none) and (pointer: coarse) {
+            .btn {
+                padding: 16px 20px;
+                font-size: 16px;
+            }
+            
+            .queue-item:hover {
+                background: inherit;
+            }
+            
+            .queue-item:active {
+                background: #f7fafc;
+            }
+        }
+        
         /* 인쇄 스타일 */
         @media print {
             body {
                 background: white !important;
                 padding: 0 !important;
+                font-size: 12px !important;
             }
             
             .container {
@@ -322,8 +466,21 @@
             }
             
             .main-content {
-                grid-template-columns: 1fr !important;
+                display: block !important;
                 padding: 20px !important;
+            }
+            
+            .notification {
+                display: none !important;
+            }
+        }
+        
+        /* 다크모드 대응 */
+        @media (prefers-color-scheme: dark) {
+            .input-group textarea {
+                background-color: #2d3748;
+                color: #e2e8f0;
+                border-color: #4a5568;
             }
         }
     </style>
@@ -334,14 +491,15 @@
             <h1>🥪 오버나잇 생산 대시보드</h1>
             <p>스마트한 샌드위치 생산 스케줄링 시스템</p>
             
-            <!-- 공유 링크 섹션 -->
             <div class="share-box">
-                <span style="font-weight: 600;">📤 공유 링크:</span>
-                <div class="share-url" id="shareUrl" onclick="copyToClipboard()">이 페이지 URL을 복사하여 공유하세요</div>
-                <button class="copy-btn" onclick="copyToClipboard()">📋 복사</button>
+                <div class="share-label">📤 공유 링크</div>
+                <div class="share-url-container">
+                    <div class="share-url" id="shareUrl" onclick="copyToClipboard()">링크를 로드 중...</div>
+                    <button class="copy-btn" onclick="copyToClipboard()">📋 복사</button>
+                </div>
             </div>
             
-            <div style="margin-top: 15px; font-size: 0.9em; opacity: 0.9;">
+            <div style="margin-top: 10px; font-size: 0.85em; opacity: 0.9;">
                 💡 팀원들과 실시간으로 생산계획을 공유하고 협업하세요!
             </div>
         </div>
@@ -352,15 +510,15 @@
                 
                 <div class="input-group">
                     <label for="sheetData">Google Sheets 데이터 붙여넣기</label>
-                    <textarea id="sheetData" rows="8" placeholder="스프레드시트에서 데이터를 복사해서 여기에 붙여넣으세요...&#10;(A열부터 H열까지 전체 선택해서 복사)"></textarea>
+                    <textarea id="sheetData" placeholder="스프레드시트에서 데이터를 복사해서 여기에 붙여넣으세요...&#10;(A열부터 H열까지 전체 선택해서 복사)"></textarea>
                 </div>
                 
                 <button class="btn" onclick="importSheetData()">📥 데이터 가져오기</button>
-                <button class="btn" onclick="generateProductionSchedule()" style="margin-top: 15px; background: linear-gradient(135deg, #4ECDC4, #44A08D);">🚀 생산계획 생성</button>
+                <button class="btn" onclick="generateProductionSchedule()" style="background: linear-gradient(135deg, #4ECDC4, #44A08D);">🚀 생산계획 생성</button>
                 
-                <div style="margin-top: 20px; padding: 15px; background: #e6fffa; border-radius: 8px; border-left: 4px solid #4ECDC4;">
-                    <h4 style="margin-bottom: 10px; color: #2d3748;">💡 사용법</h4>
-                    <p style="font-size: 0.9em; color: #4a5568; line-height: 1.4;">
+                <div class="usage-guide">
+                    <h4>💡 사용법</h4>
+                    <p>
                         1. 스프레드시트에서 전체 데이터 선택 (Ctrl+A)<br>
                         2. 복사 (Ctrl+C)<br>
                         3. 위 텍스트박스에 붙여넣기 (Ctrl+V)<br>
@@ -369,9 +527,9 @@
                     </p>
                 </div>
                 
-                <button class="btn" onclick="loadSampleData()" style="margin-top: 15px; background: linear-gradient(135deg, #9F7AEA, #667eea);">🧪 샘플 데이터 로드</button>
-                <button class="btn" onclick="clearAll()" style="margin-top: 10px; background: linear-gradient(135deg, #FF6B6B, #FF8E53);">🗑️ 전체 초기화</button>
-                <button class="btn" onclick="window.print()" style="margin-top: 10px; background: linear-gradient(135deg, #38B2AC, #2D3748);">🖨️ 생산계획 인쇄</button>
+                <button class="btn" onclick="loadSampleData()" style="background: linear-gradient(135deg, #9F7AEA, #667eea);">🧪 샘플 데이터 로드</button>
+                <button class="btn" onclick="clearAll()" style="background: linear-gradient(135deg, #FF6B6B, #FF8E53);">🗑️ 전체 초기화</button>
+                <button class="btn" onclick="window.print()" style="background: linear-gradient(135deg, #38B2AC, #2D3748);">🖨️ 생산계획 인쇄</button>
             </div>
             
             <div class="dashboard-section">
@@ -397,7 +555,7 @@
                     </div>
                     <div id="productionList">
                         <div class="empty-state">
-                            <div style="font-size: 4em; margin-bottom: 20px; opacity: 0.3;">📋</div>
+                            <div class="empty-state-icon">📋</div>
                             <h3>아직 생산계획이 없습니다</h3>
                             <p>주문을 추가하고 생산계획을 생성해보세요!</p>
                         </div>
@@ -408,55 +566,82 @@
     </div>
 
     <script>
-        // 페이지 로드 시 URL 표시
+        // 전역 변수
+        let orders = [];
+        let productionQueue = [];
+        const PRODUCTION_TIME_PER_UNIT = 2;
+
+        // 페이지 로드 시 초기화
         window.addEventListener('load', function() {
             document.getElementById('shareUrl').textContent = window.location.href;
+            updateStats();
+            updateTimestamp();
         });
 
-        // 클립보드 복사 기능
-        function copyToClipboard() {
-            const url = window.location.href;
-            navigator.clipboard.writeText(url).then(function() {
-                showNotification('링크가 복사되었습니다! 팀원들과 공유하세요 📤');
-            }).catch(function() {
-                // 복사 실패 시 대안
-                const textArea = document.createElement('textarea');
-                textArea.value = url;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                showNotification('링크가 복사되었습니다! 팀원들과 공유하세요 📤');
-            });
-        }
-
-        // 알림 표시
-        function showNotification(message) {
+        // 알림 표시 함수
+        function showNotification(message, isError = false) {
             const notification = document.createElement('div');
             notification.className = 'notification';
+            if (isError) notification.classList.add('error');
             notification.textContent = message;
             document.body.appendChild(notification);
             
             setTimeout(() => notification.classList.add('show'), 100);
             setTimeout(() => {
                 notification.classList.remove('show');
-                setTimeout(() => document.body.removeChild(notification), 300);
+                setTimeout(() => {
+                    if (document.body.contains(notification)) {
+                        document.body.removeChild(notification);
+                    }
+                }, 300);
             }, 3000);
         }
 
-        // 샌드위치별 표준 제작시간 (분) - 개당 2분
-        const PRODUCTION_TIME_PER_UNIT = 2;
-        
-        // 주문 데이터 저장
-        let orders = [];
-        let productionQueue = [];
-        
-        // Google Sheets 데이터 가져오기
+        // 클립보드 복사 함수 (모바일 최적화)
+        function copyToClipboard() {
+            const url = window.location.href;
+            
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(url).then(function() {
+                    showNotification('링크가 복사되었습니다! 📤');
+                }).catch(function() {
+                    fallbackCopyTextToClipboard(url);
+                });
+            } else {
+                fallbackCopyTextToClipboard(url);
+            }
+        }
+
+        function fallbackCopyTextToClipboard(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            textArea.style.top = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                showNotification('링크가 복사되었습니다! 📤');
+            } catch (err) {
+                // 모바일에서 수동 복사 안내
+                if (/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                    showNotification('링크를 길게 눌러서 복사해주세요!');
+                } else {
+                    showNotification('복사에 실패했습니다. 수동으로 복사해주세요.', true);
+                }
+            }
+            document.body.removeChild(textArea);
+        }
+
+        // 스프레드시트 데이터 가져오기
         function importSheetData() {
             const sheetData = document.getElementById('sheetData').value.trim();
             
             if (!sheetData) {
-                showNotification('스프레드시트 데이터를 붙여넣어주세요! 📋');
+                showNotification('스프레드시트 데이터를 붙여넣어주세요! 📋', true);
                 return;
             }
             
@@ -468,21 +653,18 @@
                     if (index === 0) return; // 헤더 건너뛰기
                     
                     const cells = line.split('\t');
-                    if (cells.length < 8) return; // 충분한 열이 없으면 건너뛰기
+                    if (cells.length < 8) return;
                     
-                    const date = cells[1] ? cells[1].trim() : '';
                     const sandwichType = cells[2] ? cells[2].trim() : '';
-                    const productType = cells[3] ? cells[3].trim() : '완품'; // D열 (완품/하프)
+                    const productType = cells[3] ? cells[3].trim() : '완품';
                     const quantity = cells[4] ? parseInt(cells[4].trim()) : 0;
-                    const packagingMethod = cells[5] ? cells[5].trim() : '일반포장'; // F열 (포장방법)
-                    const deliveryTime = cells[6] ? cells[6].trim() : ''; // G열 (납품시간)
-                    const deliveryInfo = cells[7] ? cells[7].trim() : '일반'; // H열 (납품처/비고)
+                    const packagingMethod = cells[5] ? cells[5].trim() : '일반포장';
+                    const deliveryTime = cells[6] ? cells[6].trim() : '';
+                    const deliveryInfo = cells[7] ? cells[7].trim() : '일반';
                     
-                    // 납품시간이 있고 수량이 있는 모든 항목 처리 (완품/하프 상관없이)
                     if (deliveryTime && quantity > 0 && sandwichType) {
-                        // 시간 형식 변환 (7:00 -> 07:00)
                         let formattedTime = deliveryTime;
-                        if (deliveryTime.includes(':') && !deliveryTime.includes('0') && deliveryTime.length <= 4) {
+                        if (deliveryTime.includes(':') && deliveryTime.length <= 4) {
                             const parts = deliveryTime.split(':');
                             formattedTime = parts[0].padStart(2, '0') + ':' + parts[1].padStart(2, '0');
                         }
@@ -507,26 +689,24 @@
                 updateTimestamp();
                 
                 if (orders.length > 0) {
-                    showNotification(`${orders.length}개의 주문을 성공적으로 가져왔습니다! ✅`);
-                    console.log('가져온 주문:', orders);
+                    showNotification(`${orders.length}개의 주문을 가져왔습니다! ✅`);
                 } else {
-                    showNotification('가져올 수 있는 주문이 없습니다. G열에 납품시간이 입력되고 수량이 있는지 확인해주세요. ⚠️');
+                    showNotification('가져올 수 있는 주문이 없습니다. 데이터를 확인해주세요.', true);
                 }
                 
             } catch (error) {
                 console.error('데이터 파싱 오류:', error);
-                showNotification('데이터 형식에 오류가 있습니다. 스프레드시트에서 다시 복사해주세요. ❌');
+                showNotification('데이터 형식에 오류가 있습니다.', true);
             }
         }
-        
-        // 생산계획 생성 함수
+
+        // 생산계획 생성
         function generateProductionSchedule() {
             if (orders.length === 0) {
-                showNotification('먼저 스프레드시트 데이터를 가져와주세요! 📋');
+                showNotification('먼저 데이터를 가져와주세요! 📋', true);
                 return;
             }
             
-            // 1단계: 샌드위치별로 그룹화하고 최조출고시간 찾기
             const sandwichGroups = {};
             
             orders.forEach(order => {
@@ -550,68 +730,51 @@
                 }
             });
             
-            // 2단계: 최조출고시간 기준으로 정렬 (시간을 분으로 변환해서 비교)
             productionQueue = Object.values(sandwichGroups).sort((a, b) => {
                 const timeA = timeStringToMinutes(a.earliestDelivery);
                 const timeB = timeStringToMinutes(b.earliestDelivery);
                 return timeA - timeB;
             });
             
-            // 3단계: 생산시간 계산 (개당 2분)
-            let currentTime = new Date();
-            currentTime.setHours(3, 0, 0, 0); // 새벽 3시부터 시작
-            
             productionQueue.forEach((group, index) => {
                 const totalProductionMinutes = group.totalQuantity * PRODUCTION_TIME_PER_UNIT;
-                const bufferMinutes = Math.ceil(totalProductionMinutes * 0.15); // 15% 버퍼
-                const totalMinutes = totalProductionMinutes + bufferMinutes;
+                const bufferMinutes = Math.ceil(totalProductionMinutes * 0.15);
                 
                 group.priority = index + 1;
-                group.startTime = new Date(currentTime);
-                group.estimatedDuration = totalMinutes;
-                group.productionTimePerUnit = PRODUCTION_TIME_PER_UNIT;
-                
-                currentTime.setMinutes(currentTime.getMinutes() + totalMinutes);
-                group.endTime = new Date(currentTime);
+                group.estimatedDuration = totalProductionMinutes + bufferMinutes;
             });
             
             renderProductionQueue();
             updateStats();
             updateTimestamp();
-            showNotification('생산계획이 성공적으로 생성되었습니다! 🚀');
-            
-            console.log('생성된 생산계획:', productionQueue);
+            showNotification('생산계획이 생성되었습니다! 🚀');
         }
-        
-        // 생산큐 렌더링
+
+        // 생산큐 렌더링 (모바일 최적화)
         function renderProductionQueue() {
             const productionList = document.getElementById('productionList');
             
             if (productionQueue.length === 0) {
                 productionList.innerHTML = `
                     <div class="empty-state">
-                        <div style="font-size: 4em; margin-bottom: 20px; opacity: 0.3;">📋</div>
+                        <div class="empty-state-icon">📋</div>
                         <h3>아직 생산계획이 없습니다</h3>
-                        <p>스프레드시트 데이터를 가져와서 생산계획을 생성해보세요!</p>
+                        <p>데이터를 가져와서 생산계획을 생성해보세요!</p>
                     </div>
                 `;
                 return;
             }
             
             productionList.innerHTML = productionQueue.map(group => {
-                // 납품처별로 그룹화 (완품/하프도 구분)
                 const deliveryGroups = {};
                 group.orders.forEach(order => {
-                    const deliveryInfo = order.deliveryInfo || '일반';
-                    const packagingMethod = order.packagingMethod || '일반포장';
-                    const productType = order.productType || '완품'; // 완품/하프 구분
-                    const key = `${deliveryInfo}-${packagingMethod}-${productType}`;
+                    const key = `${order.deliveryInfo}-${order.packagingMethod}-${order.productType}`;
                     
                     if (!deliveryGroups[key]) {
                         deliveryGroups[key] = {
-                            deliveryInfo: deliveryInfo,
-                            packagingMethod: packagingMethod,
-                            productType: productType,
+                            deliveryInfo: order.deliveryInfo,
+                            packagingMethod: order.packagingMethod,
+                            productType: order.productType,
                             totalQuantity: 0,
                             deliveryTimes: []
                         };
@@ -623,54 +786,115 @@
                     }
                 });
                 
-                // 납품처별 세부 정보 생성
                 const deliveryDetails = Object.values(deliveryGroups).map(delivery => {
                     const timeInfo = delivery.deliveryTimes.sort().join(', ');
                     const typeIcon = delivery.productType === '완품' ? '🟢' : '🔵';
-                    const typeColor = delivery.productType === '완품' ? '#38a169' : '#3182ce';
+                    const typeClass = delivery.productType === '완품' ? 'complete' : 'half';
                     
                     return `
-                        <div style="background: #f8f9ff; padding: 12px; margin: 8px 0; border-radius: 8px; border-left: 4px solid ${typeColor};">
-                            <div style="font-weight: 600; color: #2d3748; margin-bottom: 4px;">
-                                ${typeIcon} <span style="color: ${typeColor};">${delivery.productType}</span> | 📍 ${delivery.deliveryInfo} | 📦 ${delivery.packagingMethod}
+                        <div class="delivery-item ${typeClass}">
+                            <div class="delivery-item-header">
+                                <span>${typeIcon}</span>
+                                <span style="color: ${delivery.productType === '완품' ? '#38a169' : '#3182ce'}; font-weight: 600;">${delivery.productType}</span>
+                                <span>📍 ${delivery.deliveryInfo}</span>
+                                <span>📦 ${delivery.packagingMethod}</span>
                             </div>
-                            <div style="color: #4a5568; font-size: 0.9em;">
-                                수량: <strong>${delivery.totalQuantity}개</strong> | 출고시간: ${timeInfo}
+                            <div class="delivery-item-details">
+                                수량: <strong>${delivery.totalQuantity}개</strong><br>
+                                출고시간: ${timeInfo}
                             </div>
                         </div>
                     `;
                 }).join('');
                 
                 return `
-                    <div class="queue-item" style="display: block; padding: 25px;">
-                        <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                    <div class="queue-item">
+                        <div class="queue-item-header">
                             <div class="priority-badge priority-${Math.min(group.priority, 4)}">${group.priority}순위</div>
-                            <div style="margin-left: 15px;">
+                            <div class="sandwich-info">
                                 <div class="sandwich-name">🥪 ${group.type}</div>
-                                <div style="color: #718096; font-size: 0.9em;">
-                                    총 생산량: <strong>${group.totalQuantity}개</strong> | 예상 소요시간: ${group.estimatedDuration}분
+                                <div class="sandwich-details">
+                                    총 생산량: <strong>${group.totalQuantity}개</strong><br>
+                                    예상 소요시간: <strong>${group.estimatedDuration}분</strong>
                                 </div>
                             </div>
                         </div>
                         
-                        <div style="margin-left: 0;">
-                            <div style="font-weight: 600; color: #4a5568; margin-bottom: 10px; font-size: 1.1em;">
-                                📋 납품처별 분류:
-                            </div>
+                        <div class="delivery-section">
+                            <div class="delivery-header">📋 납품처별 분류:</div>
                             ${deliveryDetails}
                         </div>
                     </div>
                 `;
             }).join('');
         }
-        
+
         // 시간 문자열을 분으로 변환
         function timeStringToMinutes(timeStr) {
             const [hours, minutes] = timeStr.split(':').map(Number);
             return hours * 60 + minutes;
         }
-        
+
         // 통계 업데이트
         function updateStats() {
             document.getElementById('totalOrders').textContent = orders.length;
-            document.
+            document.getElementById('totalQuantity').textContent = orders.reduce((sum, order) => sum + order.quantity, 0);
+            
+            const uniqueTypes = new Set(orders.map(order => order.sandwichType));
+            document.getElementById('productionTypes').textContent = uniqueTypes.size;
+        }
+
+        // 시간 업데이트
+        function updateTimestamp() {
+            const now = new Date();
+            const timeString = now.toLocaleString('ko-KR');
+            document.getElementById('lastUpdated').textContent = `마지막 업데이트: ${timeString}`;
+        }
+
+        // 전체 초기화
+        function clearAll() {
+            if (confirm('모든 주문과 생산계획을 삭제하시겠습니까?')) {
+                orders = [];
+                productionQueue = [];
+                document.getElementById('sheetData').value = '';
+                updateStats();
+                renderProductionQueue();
+                updateTimestamp();
+                showNotification('모든 데이터가 초기화되었습니다! 🗑️');
+            }
+        }
+
+        // 샘플 데이터 로드
+        function loadSampleData() {
+            const sampleData = `날짜	구분	샌드위치명	완품/하프	수량	포장방법	납품시간	비고
+2025-08-11	단체주문	BELT	하프	20	반싸개지	6:50	대한의원
+2025-08-11	단체주문	미니크라상S	완품	30	창봉투(대)	10:00	명동
+2025-08-11	조식	햄치즈에그	하프	14	삼각박스	5:50	삼구
+2025-08-11	조식	햄치즈에그	하프	36	삼각박스	7:10	금고,폴리켐
+2025-08-11	조식	데리야끼	하프	15	반싸개지	6:50	노보노
+2025-08-11	조식	햄치즈에그	하프	25	삼각박스	6:50	하만
+2025-08-11	조식	BELT	하프	83	반싸개지	8:00	아이리스
+2025-08-11	판매용	햄치즈에그	하프	10	삼각박스	9:00	
+2025-08-11	판매용	햄치즈해쉬	하프	10	삼각박스	9:00	
+2025-08-11	판매용	햄치즈	하프	10	삼각박스	9:00	
+2025-08-11	판매용	콜드데리야끼	하프	10	삼각박스	9:00	
+2025-08-11	판매용	칠리텐더	하프	10	삼각박스	9:00	
+2025-08-11	판매용	에그마요	하프	10	삼각박스	9:00	
+2025-08-11	판매용	크랩에그	하프	10	삼각박스	9:00	
+2025-08-11	판매용	바질토마토	하프	10	삼각박스	9:00	
+2025-08-11	조식	잉글리쉬머핀	완품	24	겉싸개지	7:00	금고,폴리켐`;
+            
+            document.getElementById('sheetData').value = sampleData;
+            importSheetData();
+        }
+
+        // 터치 이벤트 최적화
+        document.addEventListener('touchstart', function() {}, {passive: true});
+        document.addEventListener('touchend', function() {}, {passive: true});
+        
+        // 초기화
+        updateStats();
+        updateTimestamp();
+    </script>
+</body>
+</html>
